@@ -6,8 +6,9 @@ import {
     Post,
     Tags,
     Body,
-    Res,
-    Path
+    Path,
+    Put,
+    Delete
 } from "tsoa";
 import {
     createPageService,
@@ -24,20 +25,24 @@ import {
     CustomError,
     BadRequestError
 } from "../middlewares/error.middleware";
-import { success } from "../utils/response.util";
+import { ApiResponse } from "../interfaces/response.interface";
+import {z} from "zod";
 
 
 // Fetch all pages
-@Route("/pages")
+@Route("/api/pages")
 @Tags("Pages")
 export class GetPagesController extends Controller {
     @Get()
-    public async getPages(@Res() res: Response): Promise<Response> {
+    public async getPages(): Promise<ApiResponse<PageDetailsData[]>> {
         try {
             const data = await getPagesService();
             if (!data || data.length === 0) throw new NotFoundError("Pages not found");
-            // return data;
-            return success(res, data, "Pages fetched successfully");
+            return {
+                successful: true,
+                message: "Pages fetched successfully!",
+                data
+            }
         } catch (err: any) {
             console.error(err);
             throw new CustomError(err.message, 500)
@@ -46,39 +51,62 @@ export class GetPagesController extends Controller {
 }
 
 // Create page
-@Route('/add-page')
+@Route('/api/add-page')
 @Tags('Pages')
 export class CreatePageController extends Controller {
     @Post()
     public async createPage(
-        @Body() request: PageDetailsData,
-        @Res() res: Response
-    ): Promise<Response> {
+        @Body() request: PageDetailsData
+    ): Promise<ApiResponse<PageDetailsData>> {
         try {
             // Validate the request using Zod
             const requestData = PageSchema.parse(request) as PageDetailsData;
-
             // Call the createPageService with the validated data
             const data = await createPageService(requestData);
-            return success(res, data, "Page added!"); // use success function
-        } catch (err: any) {
-            if (err instanceof CustomError && err.message === "Page slug exists, choose another.") {
-                throw new BadRequestError(err.message); // throw BadRequestError
+
+            if (typeof data === 'string') {
+                // Handle the error message and return it in the response
+                return {
+                    successful: false,
+                    message: data,
+                    data: ""
+                };
+            } else {
+                // Page created successfully, return the success response
+                return {
+                    successful: true,
+                    message: "Page added!",
+                    data: data
+                };
             }
-            throw new CustomError(err.message, 400); // throw a CustomError with 400 status code
+        } catch (err: any) {
+            // If Zod validation fails, it throws an error. Catch it and return a response.
+            if (err instanceof z.ZodError) {
+                return {
+                    successful: false,
+                    message: err.errors[0].message,  // Get the first error message
+                    data: ""
+                };
+            }
+            console.error(err);
+            throw new CustomError(err.message, 500)
         }
     }
 }
 
 // Re-order pages
-@Route('/reorder-pages')
+@Route('/api/reorder-pages')
 @Tags('Pages')
 export class ReorderPagesController extends Controller {
     @Post()
-    public async reorderPages(@Body() ids: string[], @Res() res: Response): Promise<Response> {
+    public async reorderPages(@Body() ids: string[]): Promise<ApiResponse<PageDetailsData[]>> {
         try {
             await reorderPagesService(ids);
-            return success(res, null, "Pages reordered successfully!");
+            return {
+                successful: true,
+                message: "Pages reordered successfully!",
+                data: []
+            }
         } catch (err: any) {
             throw new CustomError(err.message, 500);
         }
@@ -86,55 +114,69 @@ export class ReorderPagesController extends Controller {
 }
 
 // Get page by Id
-@Route('/page/{id}')
+@Route('/api/page/{page_id}')
 @Tags('Pages')
 export class GetPageByIdController extends Controller {
     @Get()
-    public async getPageById(@Path() id: string, @Res() res: Response): Promise<Response> {
+    public async getPageById(@Path() page_id: string): Promise<ApiResponse<PageDetailsData>> {
         try {
-            const validatedData = PageIdSchema.parse({id});
-            const page = await getPageByIdService(validatedData.id);
-            return success(res, {
-                title: page.title,
-                slug: page.slug,
-                content: page.content,
-                id: page._id,
-            }, "Page fetched successfully!");
+            const validatedId = PageIdSchema.parse(page_id);
+            const page = await getPageByIdService(validatedId);
+            return {
+                successful: true,
+                message: "Pages fetched successfully!",
+                data: page
+            }
         } catch (err: any) {
             throw new CustomError(err.message, 500);
         }
     }
 }
 
-// post edited page
-@Route('/edit-page/{id}')
+// Post edited page
+@Route('/api/edit-page/{page_id}')
 @Tags('Pages')
 export class EditPageController extends Controller {
-    @Post()
-    public async editPage(@Path() id: string, @Body() page: PageDetailsData, @Res() res: Response): Promise<Response> {
+    @Put()
+    public async editPage(
+        @Path() page_id: string,
+        @Body() page: PageDetailsData
+    ): Promise<ApiResponse<PageDetailsData[]>> {
         try {
-            const validatedData = PageIdSchema.parse({ id });
+            const validatedId = PageIdSchema.parse(page_id);
             const validatedPage = PageSchema.parse(page);
-            const sortedPages = await editPageService(validatedData.id, validatedPage);
-            return success(res, sortedPages, "Page edited successfully!");
+            const sortedPages = await editPageService(validatedId, validatedPage);
+            console.log(sortedPages)
+            return {
+                successful: true,
+                message: "Page edited successfully!",
+                data: sortedPages
+            };
         } catch (err: any) {
             throw new CustomError(err.message, 500);
         }
     }
 }
 
-// post delete page
-@Route('/delete-page/{id}')
+// Post delete page
+@Route('/api/delete-page/{page_id}')
 @Tags('Pages')
 export class DeletePageController extends Controller {
-    @Get()
-    public async deletePage(@Path() id: string, @Res() res: Response): Promise<Response> {
+    @Delete()
+    public async deletePage(
+        @Path() page_id: string
+    ): Promise<ApiResponse<PageDetailsData[]>> {
         try {
-            const validatedData = PageIdSchema.parse({ id });
-            const sortedPages = await deletePageService(validatedData.id);
-            return success(res, sortedPages, "Page deleted successfully!");
+            const validatedId = PageIdSchema.parse(page_id);
+            const sortedPages = await deletePageService(validatedId);
+            return {
+                successful: true,
+                message: "Page deleted successfully!",
+                data: sortedPages
+            };
         } catch (err: any) {
-            throw new CustomError(err.message, 500);
+            console.error(err);
+            throw new CustomError(err.message.message, 500);
         }
     }
 }

@@ -86,4 +86,4 @@ let ProductSchema = mongoose.Schema({
 
 });
 
-let Product = module.exports = mongoose.model('Product', ProductSchema);
+export default mongoose.model('ProductModel', ProductSchema);

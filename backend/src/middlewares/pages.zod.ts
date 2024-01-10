@@ -11,31 +11,30 @@ export const PageSchema = z.object({
     sorting: z.number().optional(),
 })
 
-export const validatePageDetails =
-    (schema: AnyZodObject) => async (
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ) => {
-        try {
-            await schema.parseAsync({
-                body: req.body,
-                query: req.query,
-                params: req.params,
-            })
-            return next();
-        } catch (err: any) {
-            console.log("erorr detectors")
-            const messages = err.issues.map((issue: { message: string }) => issue.message);
-            const errorMessage = messages.join(", "); // Concatenate error messages
-            console.log(errorMessage)
-            return error(res, errorMessage, 500);
-        }
-    }
+// export const validatePageDetails =
+//     (schema: AnyZodObject) => async (
+//         req: Request,
+//         res: Response,
+//         next: NextFunction
+//     ) => {
+//         try {
+//             await schema.parseAsync({
+//                 body: req.body,
+//                 query: req.query,
+//                 params: req.params,
+//             })
+//             return next();
+//         } catch (err: any) {
+//             const messages = err.issues.map((issue: { message: string }) => issue.message);
+//             const errorMessage = messages.join("\n"); // Concatenate error messages
+//             return error(res, errorMessage, 500);
+//         }
+//     }
 
-export const PageIdSchema = z.object({
-    id: z.string({ invalid_type_error: "Page id should be a string", required_error: "Page id is required" })
+export const PageIdSchema = z.string({
+    invalid_type_error: "Page id should be a string",
+    required_error: "Page id is required"
+})
     .refine(value => mongoose.Types.ObjectId.isValid(value), {
         message: "Invalid page Id",
     })
-})

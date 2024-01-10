@@ -1,3 +1,4 @@
+import { Response } from "express";
 import {
     BadRequestError,
     CustomError,
@@ -5,6 +6,9 @@ import {
 } from "../middlewares/error.middleware";
 import PageModel from "../models/page";
 import { PageDetailsData } from "../interfaces/pages.interface";
+import {error} from "../utils/response.util";
+
+
 
 // get all pages
 export const getPagesService = async (): Promise<PageDetailsData[]> => {
@@ -27,7 +31,7 @@ export const createPageService = async (page: PageDetailsData) => {
         // Check if page with same slug already exists
         const existingPage = await PageModel.findOne({ slug: slug });
         if (existingPage) {
-            throw new BadRequestError("Page slug exists, choose another.");
+            return "Page slug exists, choose another.";
         }
         // Create new page
         const newPage = {
@@ -37,9 +41,9 @@ export const createPageService = async (page: PageDetailsData) => {
             sorting: 100,
         };
         return await PageModel.create(newPage);
-    } catch (error) {
-        console.error("error creating page")
-        throw new CustomError("An error occured while getting page")
+    } catch (error: any) {
+        console.error(error)
+        throw new CustomError("An error occured while creating page")
     }
 }
 
@@ -77,40 +81,40 @@ export const getPageByIdService = async (id: string) => {
 }
 
 // post edited page
-export const editPageService = async (id: string, page: any) => {
+export const editPageService = async (page_id: string, page: any) => {
     try {
         const pageDetails: PageDetailsData = {
             title: page.title,
             slug: page.slug,
             content: page.content
         };
-        const existingPage = await PageModel.findOne({ slug: pageDetails.slug, _id: { $ne: id } });
-        if (existingPage) {
-            throw new BadRequestError("Page slug exists, choose another.");
+        const existingPage = await PageModel.findOne({ slug: pageDetails.slug, _id: { $ne: page_id } });
+        if (!existingPage) {
+            throw new BadRequestError("Page does not exist!");
         }
-        const updatedPage = await PageModel.findByIdAndUpdate(id, pageDetails, { new: true });
+        const updatedPage = await PageModel.findByIdAndUpdate(page_id, pageDetails, { new: true });
         if (!updatedPage) {
-            throw new NotFoundError(`Page with id ${id} not found.`);
+            throw new NotFoundError(`Page with id ${page_id} not found.`);
         }
         const sortedPages = await getPagesService();
         return sortedPages;
     } catch (error) {
-        console.error("error editing page");
+        console.error(error);
         throw new CustomError("An error occurred while editing page", 500);
     }
 }
 
 // post delete page
-export const deletePageService = async (id: string) => {
+export const deletePageService = async (page_id: string) => {
     try {
-        const deletedPage = await PageModel.findByIdAndRemove(id);
+        const deletedPage = await PageModel.findByIdAndRemove(page_id);
         if (!deletedPage) {
-            throw new NotFoundError(`Page with id ${id} not found.`);
+            throw new NotFoundError(`Page with id ${page_id} not found.`);
         }
         const sortedPages = await getPagesService();
         return sortedPages;
     } catch (error) {
-        console.error("error deleting page");
+        console.error(error);
         throw new CustomError("An error occurred while deleting page", 500);
     }
 }

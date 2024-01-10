@@ -1,10 +1,10 @@
 import express, { Request, RequestHandler, Response } from "express";
 import { sayHelloService } from "../services/greeting.service";
-import {Route,Get, Controller, Request as TsoaRequest, Response as TsoaResponse} from "tsoa";
+import {Route,Get, Controller, Request as TsoaRequest, Response as TsoaResponse, Tags} from "tsoa";
 import { GreetingResponse } from "../interfaces/greeting.interface";
 
 
-@Route('/')
+@Route('/api')
 export class GreetingController extends Controller {
     @Get()
     public async sayHello(): Promise<GreetingResponse> {

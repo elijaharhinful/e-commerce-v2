@@ -26,11 +26,198 @@
 					"slug": {
 						"type": "string"
 					},
-					"content": {}
+					"content": {},
+					"sorting": {
+						"type": "number",
+						"format": "double"
+					}
 				},
 				"required": [
 					"title",
 					"content"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_PageDetailsData-Array_": {
+				"properties": {
+					"successful": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"anyOf": [
+							{
+								"items": {
+									"$ref": "#/components/schemas/PageDetailsData"
+								},
+								"type": "array"
+							},
+							{
+								"type": "string"
+							}
+						]
+					}
+				},
+				"required": [
+					"successful",
+					"message",
+					"data"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_PageDetailsData_": {
+				"properties": {
+					"successful": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/PageDetailsData"
+							},
+							{
+								"type": "string"
+							}
+						]
+					}
+				},
+				"required": [
+					"successful",
+					"message",
+					"data"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ProductDetailsData": {
+				"properties": {
+					"title": {
+						"type": "string"
+					},
+					"slug": {
+						"type": "string"
+					},
+					"desc": {
+						"type": "string"
+					},
+					"category": {
+						"type": "string"
+					},
+					"initialPrice": {
+						"type": "number",
+						"format": "double"
+					},
+					"price": {
+						"type": "number",
+						"format": "double"
+					},
+					"image": {
+						"type": "string"
+					},
+					"discount": {
+						"type": "number",
+						"format": "double"
+					},
+					"rating": {
+						"type": "number",
+						"format": "double"
+					},
+					"numReviews": {
+						"type": "number",
+						"format": "double"
+					},
+					"reviews": {},
+					"quantity": {
+						"type": "number",
+						"format": "double"
+					},
+					"createdBy": {},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"title",
+					"desc",
+					"category",
+					"initialPrice",
+					"price",
+					"discount",
+					"rating",
+					"numReviews",
+					"reviews",
+					"quantity",
+					"createdAt",
+					"updatedAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_ProductDetailsData-Array_": {
+				"properties": {
+					"successful": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"anyOf": [
+							{
+								"items": {
+									"$ref": "#/components/schemas/ProductDetailsData"
+								},
+								"type": "array"
+							},
+							{
+								"type": "string"
+							}
+						]
+					}
+				},
+				"required": [
+					"successful",
+					"message",
+					"data"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_ProductDetailsData_": {
+				"properties": {
+					"successful": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/ProductDetailsData"
+							},
+							{
+								"type": "string"
+							}
+						]
+					}
+				},
+				"required": [
+					"successful",
+					"message",
+					"data"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -39,7 +226,7 @@
 		"securitySchemes": {}
 	},
 	"info": {
-		"title": "e-commerce website v2 api",
+		"title": "E-commerce Website v2 Api",
 		"version": "1.0.0",
 		"license": {
 			"name": "ISC"
@@ -50,7 +237,7 @@
 	},
 	"openapi": "3.0.0",
 	"paths": {
-		"/": {
+		"/api": {
 			"get": {
 				"operationId": "SayHello",
 				"responses": {
@@ -69,7 +256,7 @@
 				"parameters": []
 			}
 		},
-		"/pages": {
+		"/api/pages": {
 			"get": {
 				"operationId": "GetPages",
 				"responses": {
@@ -78,10 +265,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/PageDetailsData"
-									},
-									"type": "array"
+									"$ref": "#/components/schemas/ApiResponse_PageDetailsData-Array_"
 								}
 							}
 						}
@@ -94,7 +278,7 @@
 				"parameters": []
 			}
 		},
-		"/add-page": {
+		"/api/add-page": {
 			"post": {
 				"operationId": "CreatePage",
 				"responses": {
@@ -103,7 +287,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/PageDetailsData"
+									"$ref": "#/components/schemas/ApiResponse_PageDetailsData_"
 								}
 							}
 						}
@@ -124,6 +308,197 @@
 						}
 					}
 				}
+			}
+		},
+		"/api/reorder-pages": {
+			"post": {
+				"operationId": "ReorderPages",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_PageDetailsData-Array_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Pages"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/page/{page_id}": {
+			"get": {
+				"operationId": "GetPageById",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_PageDetailsData_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Pages"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "page_id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/edit-page/{page_id}": {
+			"put": {
+				"operationId": "EditPage",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_PageDetailsData-Array_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Pages"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "page_id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PageDetailsData"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/delete-page/{page_id}": {
+			"delete": {
+				"operationId": "DeletePage",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_PageDetailsData-Array_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Pages"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "page_id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/products": {
+			"get": {
+				"operationId": "GetProducts",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_ProductDetailsData-Array_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Products"
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/api/products/{category}": {
+			"get": {
+				"operationId": "GetproductsByCategory",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_ProductDetailsData_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Products"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "category",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
 			}
 		}
 	},
