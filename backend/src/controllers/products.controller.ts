@@ -16,8 +16,10 @@ import {
     BadRequestError
 } from "../middlewares/error.middleware";
 import { ApiResponse } from "../interfaces/response.interface";
-import { getProductsByCategoryService, getProductsService } from "../services/products.service";
+import { getProductDetailsService, getProductsByCategoryService, getProductsService, postProductReviewService } from "../services/products.service";
 import category from "../models/category";
+import product from "../models/product";
+import { ProductIdSchema, ProductReviewSchema } from "../middlewares/products.zod";
 
 
 // Fetch all products
@@ -64,50 +66,50 @@ export class ProductsByCategoriesController extends Controller {
     }
 }
 
-// // Get page by Id
-// @Route('/api/page/{page_id}')
-// @Tags('Pages')
-// export class GetPageByIdController extends Controller {
-//     @Get()
-//     public async getPageById(@Path() page_id: string): Promise<ApiResponse<PageDetailsData>> {
-//         try {
-//             const validatedId = PageIdSchema.parse(page_id);
-//             const page = await getPageByIdService(validatedId);
-//             return {
-//                 successful: true,
-//                 message: "Pages fetched successfully!",
-//                 data: page
-//             }
-//         } catch (err: any) {
-//             throw new CustomError(err.message, 500);
-//         }
-//     }
-// }
+// Get product details
+@Route('/api/products/{category}/{product_name}')
+@Tags('Products')
+export class GetProductsDetailsController extends Controller {
+    @Get()
+    public async getProductDetails(@Path() product_name: string): Promise<ApiResponse<ProductDetailsData>> {
+        try {
+            const product = await getProductDetailsService(product_name);
+            return {
+                successful: true,
+                message: "Product details fetched successfully!",
+                data: product
+            }
+        } catch (err: any) {
+            throw new CustomError(err.message, 500);
+        }
+    }
+}
 
-// // Post edited page
-// @Route('/api/edit-page/{page_id}')
-// @Tags('Pages')
-// export class EditPageController extends Controller {
-//     @Put()
-//     public async editPage(
-//         @Path() page_id: string,
-//         @Body() page: PageDetailsData
-//     ): Promise<ApiResponse<PageDetailsData[]>> {
-//         try {
-//             const validatedId = PageIdSchema.parse(page_id);
-//             const validatedPage = PageSchema.parse(page);
-//             const sortedPages = await editPageService(validatedId, validatedPage);
-//             console.log(sortedPages)
-//             return {
-//                 successful: true,
-//                 message: "Page edited successfully!",
-//                 data: sortedPages
-//             };
-//         } catch (err: any) {
-//             throw new CustomError(err.message, 500);
-//         }
-//     }
-// }
+// Post product review
+@Route('/api/products/{catergory}/{product_name}/review/{product_id}')
+@Tags('Products')
+export class PostProductReviewController extends Controller {
+    @Put()
+    public async postReview(
+        @Path() product_id: string,
+        @Path() product_name: string,
+        @Body() review: ProductDetailsData
+    ): Promise<ApiResponse<ProductDetailsData[]>> {
+        try {
+            const validatedProductId = ProductIdSchema.parse(product_id);
+            const validatedProductReview = ProductReviewSchema.parse(review);
+            const validatedReview = await postProductReviewService(validatedProductId, product_name,validatedProductReview);
+            console.log(validatedReview)
+            return {
+                successful: true,
+                message: "Page edited successfully!",
+                data: validatedReview
+            };
+        } catch (err: any) {
+            throw new CustomError(err.message, 500);
+        }
+    }
+}
 
 // // Post delete page
 // @Route('/api/delete-page/{page_id}')

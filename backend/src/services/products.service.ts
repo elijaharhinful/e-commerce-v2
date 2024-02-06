@@ -6,7 +6,7 @@ import {
 import ProductModel from "../models/product";
 import CategoryModel from "../models/category";
 import { ProductDetailsData } from "../interfaces/products.interface";
-
+import { ProductReviewData } from "../interfaces/product.review.interface";
 
 
 // get all products
@@ -25,7 +25,7 @@ export const getProductsService = async (): Promise<ProductDetailsData[]> => {
 // get products by category
 export const getProductsByCategoryService = async (category: string) => {
     try {
-        const products = await ProductModel.find({category: category});
+        const products = await ProductModel.find({ category: category });
         if (!products) throw new NotFoundError("Products not found");
 
         return products;
@@ -35,86 +35,44 @@ export const getProductsByCategoryService = async (category: string) => {
     }
 };
 
-// // create page
-// export const createPageService = async (page: PageDetailsData) => {
-//     try {
-//         // If slug is not provided in request, create it from title
-//         let slug = page.slug ? page.slug.replace(/\s+/g, "-").toLowerCase() : page.title.replace(/\s+/g, "-").toLowerCase();
-//         // Check if page with same slug already exists
-//         const existingPage = await PageModel.findOne({ slug: slug });
-//         if (existingPage) {
-//             return "Page slug exists, choose another.";
-//         }
-//         // Create new page
-//         const newPage = {
-//             title: page.title,
-//             slug: slug,
-//             content: page.content,
-//             sorting: 100,
-//         };
-//         return await PageModel.create(newPage);
-//     } catch (error: any) {
-//         console.error(error)
-//         throw new CustomError("An error occured while creating page")
-//     }
-// }
+// get product details
+export const getProductDetailsService = async (product_name: string) => {
+    try {
+        const product = await ProductModel.find({ slug: product_name.toLowerCase() });
+        if (!product) throw new NotFoundError("Product not found!");
 
-// // re-order pages
-// export const reorderPagesService = async (ids: string[]) => {
-//     try {
-//         for (let i = 0; i < ids.length; i++) {
-//             let id = ids[i];
-//             let page = await PageModel.findById(id);
-//             if (page) {
-//                 page.sorting = i;
-//                 await page.save();
-//             } else {
-//                 throw new NotFoundError(`Page with id ${id} not found.`);
-//             }
-//         }
-//     } catch (error) {
-//         console.error("error reordering pages");
-//         throw new CustomError("An error occurred while reordering pages", 500);
-//     }
-// }
+        return product;
+    } catch (error) {
+        console.error("Error while getting product details:", error);
+        throw new CustomError("An error occurred while getting product details", 500);
+    }
+};
 
-// // get page by Id
-// export const getPageByIdService = async (id: string) => {
-//     try {
-//         const page = await PageModel.findById(id);
-//         if (!page) {
-//             throw new NotFoundError(`Page with id ${id} not found.`);
-//         }
-//         return page;
-//     } catch (error) {
-//         console.error("error getting page");
-//         throw new CustomError("An error occurred while getting page", 500);
-//     }
-// }
+// post product review
+export const postProductReviewService = async (product_id: string, product_name: string, review: ProductReviewData) => {
+    try {
+        const newReview = {
+            name: review.name,
+            rating: review.rating,
+            coment: review.comment
+        };
 
-// // post edited page
-// export const editPageService = async (page_id: string, page: any) => {
-//     try {
-//         const pageDetails: PageDetailsData = {
-//             title: page.title,
-//             slug: page.slug,
-//             content: page.content
-//         };
-//         const existingPage = await PageModel.findOne({ slug: pageDetails.slug, _id: { $ne: page_id } });
-//         if (!existingPage) {
-//             throw new BadRequestError("Page does not exist!");
-//         }
-//         const updatedPage = await PageModel.findByIdAndUpdate(page_id, pageDetails, { new: true });
-//         if (!updatedPage) {
-//             throw new NotFoundError(`Page with id ${page_id} not found.`);
-//         }
-//         const sortedPages = await getPagesService();
-//         return sortedPages;
-//     } catch (error) {
-//         console.error(error);
-//         throw new CustomError("An error occurred while editing page", 500);
-//     }
-// }
+        const product = await ProductModel.findById(product_id);
+        if (!product) throw new NotFoundError("Product not found!");
+
+        if (product) {
+            product.reviews.push(review);
+            product.numReviews = product.reviews.length;
+            product.rating = product.reviews.reduce((a:any, c:any) => c.rating + a, 0) / product.reviews.length;
+        }
+
+        const updatedProduct = await getProductDetailsService(product_name);
+        return updatedProduct;
+    } catch (error) {
+        console.error(error);
+        throw new CustomError("An error occurred while editing page", 500);
+    }
+}
 
 // // post delete page
 // export const deletePageService = async (page_id: string) => {
